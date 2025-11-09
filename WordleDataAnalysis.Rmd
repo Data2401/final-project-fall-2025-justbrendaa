@@ -9,27 +9,29 @@ output: slidy_presentation
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-## R Markdown
+## Introduction
 
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Wordle is a popular online word puzzle where players guess a five-letter word within six attempts. Each guess provides feedback: letters in the correct position are highlighted in green, letters in the word but in the wrong position appear yellow, and letters not in the word are gray. Beyond being an engaging game, Wordle presents a rich dataset for analysis. Words have unique characteristics, such as vowel-consonant balance, repeated letters, rare letters, palindromes, Scrabble scores, and frequency of usage.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+This analysis explores these patterns across 1600+ Wordle words to uncover trends in word selection, letter placement, and other structural features. By examining the relationships between word properties, frequency, and temporal trends, this project aims to provide insights into the hidden patterns that shape the daily puzzle.
 
-## Slide with Bullets
+## Questions to Answer
 
 - Bullet 1
 - Bullet 2
 - Bullet 3
 
-## Slide with R Output
+## Data Preparation
 
 ```{r cars, echo = TRUE}
 summary(cars)
 ```
 
-## Slide with Plot
+## Data Analysis
 
 ```{r pressure}
 plot(pressure)
 ```
+
+# Summary
 

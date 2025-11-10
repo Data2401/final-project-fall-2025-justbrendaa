@@ -24,8 +24,17 @@ This analysis explores these patterns across 1600+ Wordle words to uncover trend
 ## Data Preparation
 
 ```{r cars, echo = TRUE}
-summary(cars)
+library(ggplot2) # plot visualization
+library(dplyr)   # data analysis (summarizing, filtering, etc)
+library(tidyr)   # reshaping data (pivot, etc)
+library(stringr) # string manipulation (bigrams, word features, etc)
 ```
+
+```{r}
+wordle_data <- read.csv("wordle_data.csv")
+glimpse(wordle_data)
+```
+
 
 ## Data Analysis
 

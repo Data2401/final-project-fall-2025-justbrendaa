@@ -27,10 +27,17 @@ This analysis explores these patterns across 1600+ Wordle words to uncover trend
 library(ggplot2) # plot visualization
 library(dplyr)   # data analysis (summarizing, filtering, etc)
 library(tidyr)   # reshaping data (pivot, etc)
-library(stringr) # string manipulation (bigrams, word features, etc)
+library(stringr) # string manipulation (used for bigrams)
 ```
 
 ```{r}
+# I scrapped this data from 
+# https://wordfinder.yourdictionary.com/wordle/answers/
+# and added what I thought to be relevant data columns 
+
+# some column names are easy to understand 
+# I will add some section explaining what the dataset columns mean
+
 wordle_data <- read.csv("wordle_data.csv")
 glimpse(wordle_data)
 ```
@@ -39,8 +46,53 @@ glimpse(wordle_data)
 ## Data Analysis
 
 ```{r pressure}
-plot(pressure)
+# so I found this data on kaggle
+# https://www.kaggle.com/code/bcruise/wordle-letter-frequencies
+# and towards the end they do common bigram analysis 
+# will do that with my data 
+# so I can use P1, P2, P3, P4, P5
+# this holds the individual letters by position
+
+bigrams <- wordle_data %>% 
+  mutate (B1 = paste0(P1, P2),  # paste0 no separator by default
+          B2 = paste0(P2, P3),
+          B3 = paste0(P3, P4),
+          B4 = paste0(P4, P5)) %>% 
+  select(B1, B2, B3, B4) %>% 
+  pivot_longer(cols = everything(), names_to = "Position", values_to = "Bigram") %>% # names_to = col name to create from specified cols before, values_to = new column to create from values in each cell.
+  group_by(Bigram) %>% 
+  summarise(Counts = n()) %>% 
+  arrange(-Counts)
+ 
+
+
+bigrams
+
 ```
+
+
+```{r}
+# plotting bigram data
+# code below bad 
+# didnt realize i had 354 possible bigrams
+
+bigrams %>% ggplot(aes(x = Bigram)) + geom_bar()
+
+# instead lets take top bigrams 
+top_bigrams <- bigrams %>% head(25)
+top_bigrams
+
+top_bigrams %>% ggplot(aes(x = Bigram)) + geom_bar()
+
+# https://r-resources.massey.ac.nz/rgcookbook/RECIPE-BAR-GRAPH-COUNTS.html
+# section 3.3.4
+
+# geom_col uses stat_identity by default so I can pass in the pre-calculated counts
+top_bigrams %>% ggplot(aes(x = reorder(Bigram, -Counts), y = Counts)) + geom_col()
+
+# will add labels and stuff later. 
+```
+
 
 # Summary
 

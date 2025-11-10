@@ -27,7 +27,7 @@ This analysis explores these patterns across 1600+ Wordle words to uncover trend
 library(ggplot2) # plot visualization
 library(dplyr)   # data analysis (summarizing, filtering, etc)
 library(tidyr)   # reshaping data (pivot, etc)
-library(stringr) # string manipulation (used for bigrams)
+library(stringr) # string manipulation (used for bigrams) ok actually i realized paste would work for my bigram graphs but keeping this library in case i need to do other string stuff 
 ```
 
 ```{r}

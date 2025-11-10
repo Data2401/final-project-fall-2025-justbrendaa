@@ -11,15 +11,13 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Introduction
 
-Wordle is a popular online word puzzle where players guess a five-letter word within six attempts. Each guess provides feedback: letters in the correct position are highlighted in green, letters in the word but in the wrong position appear yellow, and letters not in the word are gray. Beyond being an engaging game, Wordle presents a rich dataset for analysis. Words have unique characteristics, such as vowel-consonant balance, repeated letters, rare letters, palindromes, Scrabble scores, and frequency of usage.
+Wordle is a popular online word puzzle where players guess a five letter word within six attempts. Each guess provides feedback: letters in the correct position are highlighted in green, letters in the word but in the wrong position appear yellow, and letters not in the word are gray. Beyond being an engaging game, Wordle presents a rich dataset for analysis. Words have unique characteristics, such as vowel-consonant balance, repeated letters, rare letters, palindromes, Scrabble scores, and frequency of usage.
 
 This analysis explores these patterns across 1600+ Wordle words to uncover trends in word selection, letter placement, and other structural features. By examining the relationships between word properties, frequency, and temporal trends, this project aims to provide insights into the hidden patterns that shape the daily puzzle.
 
 ## Questions to Answer
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+-
 
 ## Data Preparation
 
@@ -41,6 +39,88 @@ library(stringr) # string manipulation (used for bigrams) ok actually i realized
 wordle_data <- read.csv("wordle_data.csv")
 glimpse(wordle_data)
 ```
+## Letter Counts
+
+letter counts overall
+show trends on most used letters
+
+
+note: my own scores. how many tries did it take me 
+
+
+```{r}
+wordle_data
+
+
+letter_frequency <- wordle_data %>% 
+  select(P1, P2, P3, P4, P5) %>% 
+  pivot_longer(cols = c(P1, P2, P3, P4, P5), names_to = "Position", values_to = "Letter") %>% 
+  group_by(Letter) %>% 
+  summarise(Counts = n()) %>% 
+  arrange(-Counts)
+  
+
+head(letter_frequency, n = 4)
+tail(letter_frequency, n = 4)
+
+letter_frequency
+
+letter_frequency %>% 
+  ggplot(aes(x = reorder(Letter,-Counts), y = Counts)) + geom_col()
+```
+
+
+## Letter Counts by position
+
+letter counts by positions
+show trends on most used letters by position 
+
+The heatmap shows how frequently each letter appears in each position of Wordle answers. Darker shades indicate more common letters. By visualizing letter frequency across positions we can identify common structural patterns in five letter words like certain consonants often starting words.
+
+S appears very often in P1 (starting position)
+Y is very common in P5
+
+
+
+```{r}
+# x = letter
+# y = position 
+# heatmap 
+
+
+positional_letter_frequency <- wordle_data %>% 
+  select(P1, P2, P3, P4, P5) %>% 
+  pivot_longer(cols = c(P1, P2, P3, P4, P5), names_to = "Position", values_to = "Letter") %>% 
+  group_by(Position, Letter) %>% 
+  summarise(Counts = n()) %>% 
+  arrange(Position, -Counts)
+
+positional_letter_frequency
+
+positional_letter_frequency %>% 
+  ggplot(aes(x = reorder(Letter, -Counts), y = Counts)) + 
+  geom_col() + 
+  facet_wrap(~Position, scales = "free_x")
+
+positional_letter_frequency %>% 
+  ggplot(aes(x = reorder(Letter, -Counts), y = Counts)) + 
+  geom_col() + 
+  facet_wrap(~Position)
+
+positional_letter_frequency %>%
+  ggplot(aes(x = Letter, y = Position, fill = Counts)) +
+  geom_tile(color = "White") + 
+  geom_text(aes(label = Counts), color = "White", size = 2) +
+  scale_fill_gradient(low = "salmon", high = "darkred")
+
+# filter and plot
+# vowels first 
+# or maybes just vowels
+
+```
+
+
+
 
 
 ## Data Analysis

@@ -70,19 +70,25 @@ bigrams
 
 ```
 
+## MOST COMMON BIGRAMS 
+position not taken  into account here
+
+what does this graph tell us? 
+the Most Common Bigrams plot shows which two letter combos appear most frequently across all Wordle answers regardless of where they occur in the word. This gives insight into the most common letter pairings in English five letter words which can be useful for players choosing strong starting guesses.
 
 ```{r}
+
 # plotting bigram data
 # code below bad 
 # didnt realize i had 354 possible bigrams
 
-bigrams %>% ggplot(aes(x = Bigram)) + geom_bar()
+# bigrams %>% ggplot(aes(x = Bigram)) + geom_bar()
 
 # instead lets take top bigrams 
 top_bigrams <- bigrams %>% head(25)
 top_bigrams
 
-top_bigrams %>% ggplot(aes(x = Bigram)) + geom_bar()
+# top_bigrams %>% ggplot(aes(x = Bigram)) + geom_bar()
 
 # https://r-resources.massey.ac.nz/rgcookbook/RECIPE-BAR-GRAPH-COUNTS.html
 # section 3.3.4
@@ -91,6 +97,44 @@ top_bigrams %>% ggplot(aes(x = Bigram)) + geom_bar()
 top_bigrams %>% ggplot(aes(x = reorder(Bigram, -Counts), y = Counts)) + geom_col()
 
 # will add labels and stuff later. 
+```
+
+## Most common bigrams by position?
+
+The Most Common Bigrams by Position plot breaks bigrams data down by where the pair appears within the word. This helps reveal structural patterns like certain bigrams like “TH” or “SH” can appear more often at the start of words while others like “ER” or “LY” can appear near the end more frequently. Understanding these trends can guide more strategic guesses by considering both frequency and position. I will go deeper into this when looking at the prefix and suffix columns in the data
+
+```{r}
+
+bigrams_by_position <- wordle_data %>% 
+  mutate (B1 = paste0(P1, P2),  # paste0 no separator by default
+          B2 = paste0(P2, P3),
+          B3 = paste0(P3, P4),
+          B4 = paste0(P4, P5)) %>% 
+  select(B1, B2, B3, B4) %>% 
+  pivot_longer(cols = everything(), names_to = "Position", values_to = "Bigram") %>%  # names_to = col name to create from specified cols before, values_to = new column to create from values in each cell.
+  group_by(Position, Bigram) %>% 
+  summarise(Counts = n()) %>% 
+  arrange(Position, -Counts)
+ 
+bigrams_by_position
+```
+
+```{r}
+# just taking 10 from each position
+# b4 has a tie
+
+top_bigrams_by_pos <- bigrams_by_position %>%
+  group_by(Position) %>%
+  slice_max(Counts, n = 10)
+
+top_bigrams_by_pos
+
+# positional bigrams do not share same x axis :(
+top_bigrams_by_pos %>% ggplot(aes(x = Bigram, y = Counts)) + geom_col() + facet_wrap(~Position)
+
+# fixed here
+# ok why is this not reordering?? 
+top_bigrams_by_pos %>% ggplot(aes(x = reorder(Bigram, -Counts), y = Counts)) + geom_col() + facet_wrap(~Position, scales = "free_x")
 ```
 
 

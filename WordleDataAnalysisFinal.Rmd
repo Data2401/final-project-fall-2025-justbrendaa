@@ -170,6 +170,8 @@ The results show that E is the most common letter, followed by A, R, O, and T. T
 
 I’ve always wondered whether Wordle’s selection algorithm follows any patterns when choosing daily solutions. Do certain letters tend to appear in specific positions more than others? To investigate, we can look at the frequency of letters by position. English has strong tendencies here, such as common starting letters and typical word endings. Recognizing these positional patterns helps explain why some guesses feel more informative in Wordle. The table below highlights the top letters for each position, followed by a heatmap showing the full distribution.
 
+<br> 
+
 ```{r message=FALSE, warning=FALSE, fig.width = 12, fig.height=8}
 # pulling positional letter frequency data
 positional_letter_frequency <- wordle_data %>% 
@@ -186,7 +188,10 @@ positional_letter_frequency %>%
   kbl() %>% 
   kable_styling() %>% 
   scroll_box(width = "50%", height = "400px")
+```
+<br> 
 
+```{r message=FALSE, warning=FALSE, fig.width = 12, fig.height=8}
 # pull all letters 
 all_letters <- sort(unique(positional_letter_frequency$Letter))
 
@@ -232,6 +237,10 @@ positional_letter_frequency %>%
 ```
 
 The heatmap reveals several clear patterns. Consonants like S, T, B, and C dominate the first position, which aligns with common English word structures. In the final position, letters such as E, Y, and T appear frequently, whereas letters like J, Q, and V never occur at the end. These patterns illustrate how predictable certain positions can be and why some guesses help narrow down solutions more efficiently. Observing letter behavior by position deepens our understanding of English word structure in the context of Wordle.
+
+
+<br><br>
+
 
 ## FUN FACT
 
@@ -338,7 +347,7 @@ bigrams %>%  head(25) %>%
 ```
 The bar chart shows the twenty-five most common bigrams across all Wordle solutions. Many of these pairs reflect standard English patterns. ER is the most frequent bigram, followed by IN, ST, RA, and AR. These pairs often appear in common word endings or roots. Understanding which bigrams are frequent helps explain why certain guesses are more effective when solving a puzzle.
 
-## How does the bigram frequency change depending on where they appear in the word?
+# How does the bigram frequency change depending on where they appear in the word?
 
 Next, we examine bigrams by their position within the word. Each five letter Wordle solution has four bigram positions:
 
@@ -469,7 +478,7 @@ When broken down by position, clear patterns emerge. B1, the word’s opening bi
 These positional differences highlight that bigrams behave differently depending on where they appear. Wordle solutions often start with consonant clusters and end with standard English suffixes. Understanding these patterns helps explain why some guesses can eliminate large groups of possibilities based on just a few letters.
 
 
-## So _how_ can we apply this? 
+# So _how_ can we apply this? 
 
 Lets consider again a Wordle solution similar to BAKER, where the last two letters are unknown: BAK__. Possible completions could include:
 
@@ -477,23 +486,24 @@ Lets consider again a Wordle solution similar to BAKER, where the last two lette
 - BAKER
 - BAKES
 
+So from our bigram positional data we will find the occurrences of ED, ED, and ES in bigram position 4 (B4)
+
 ```{r}
 bigrams_by_position %>% 
   filter(Position == "B4", Bigram %in% c("ER", "ED", "ES"))
 ```
 
 
-
-
-From the data, the potential letters are ED, ER, and ES:
+From the data frequencies in B4 are as follows:
 
 - ED occurs 7 times
 - ER occurs 95 times
-- Es occurs 0 times
+- ES occurs 0 times
 
 
 So based on our positional bigram data we can assume that the most likely solution is BAKER.
 
+<br> 
 
 ## FUN FACT AGAIN!
 Interestingly, the bigram data further supports my observation about rare plurals! 

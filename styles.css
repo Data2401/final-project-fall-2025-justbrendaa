@@ -27,7 +27,6 @@
 
 .questions-text {
   border: 5px outset #435663;
-  height: 50%;
 }
 
 
@@ -43,7 +42,6 @@
 
 .packages-text {
   border: 5px outset #435663;
-  height: 50%;
 }
 
 /* DATASET SLIDE CSS */
@@ -125,7 +123,6 @@
 
 .q1-text {
   border: 5px outset #435663;
-  height: 25%;
 }
 
 /* q2 SLIDE CSS */
@@ -140,7 +137,6 @@
 
 .q2-text {
   border: 5px outset #435663;
-  height: 25%;
 }
 
 /* useful1 SLIDE CSS */
@@ -155,7 +151,7 @@
 
 .useful1-text {
   border: 5px outset #435663;
-  height: 50%;
+
 }
 
 #slide-q3 h1{
@@ -168,7 +164,7 @@
 
 .q3-text {
   border: 5px outset #435663;
-  height: 25%;
+ 
 }
 
 
@@ -182,7 +178,7 @@
 
 .q4-text {
   border: 5px outset #435663;
-  height: 50%;
+ 
 }
 
 
@@ -198,7 +194,7 @@
 
 .useful2-text {
   border: 5px outset #435663;
-  height: 50%;
+
 }
 
 #slide-q5 h1{
@@ -211,12 +207,10 @@
 
 .q5-text-1 {
   border: 5px outset #435663;
-  height: 20%;
 }
 
 .q5-text {
   border: 5px outset #435663;
-  height: 40%;
 }
 
 #slide-q6 h1{
@@ -229,7 +223,6 @@
 
 .q6-text {
   border: 5px outset #435663;
-  height: 30%;
 }
 
 #slide-summary h1{
@@ -242,7 +235,6 @@
 
 .summary-text {
   border: 5px outset #435663;
-  height: 100%;
 }
 
 

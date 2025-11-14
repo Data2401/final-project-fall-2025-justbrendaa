@@ -27,6 +27,7 @@ library(tidyr)   # reshaping data (pivot, etc)
 library(stringr) # string manipulation (used for bigrams) ok actually i realized paste would work for my bigram graphs but keeping this library in case i need to do other string stuff 
 library(kableExtra)
 library(gridExtra)
+
 ```
 
 
@@ -53,6 +54,8 @@ wordle_data <- read.csv("wordle_data.csv")
 
 wordle_data %>% kbl() %>% kable_styling() %>% 
   scroll_box(width = "100%", height = "400px")
+
+wordle_data
 ```
 
 # Questions to Answer
@@ -146,7 +149,7 @@ positional_letter_frequency %>%
 
 ## Data Analysis
 
-```{r pressure}
+```{r}
 # so I found this data on kaggle
 # https://www.kaggle.com/code/bcruise/wordle-letter-frequencies
 # and towards the end they do common bigram analysis 
@@ -236,6 +239,8 @@ top_bigrams_by_pos %>% ggplot(aes(x = Bigram, y = Counts)) + geom_col() + facet_
 # fixed here
 # ok why is this not reordering?? 
 top_bigrams_by_pos %>% ggplot(aes(x = reorder(Bigram, -Counts), y = Counts)) + geom_col() + facet_wrap(~Position, scales = "free_x")
+
+bigrams
 ```
 
 # month of november stats 2024
@@ -287,4 +292,145 @@ november_data_2025
 
 
 # Summary
+
+```{r}
+
+library(lubridate)
+# this makes my string date column into date objects
+wordle_data <- wordle_data %>% 
+  mutate(Date = as.Date(Date, format = "%Y-%m-%d"))
+
+wordle_data
+
+wordle_data <- wordle_data %>% 
+  mutate(
+    day = mday(Date),
+    month = month(
+      Date, label = T, abbr = F, locale = 'en_US.UTF-8'),
+    Weekday = wday(Date, label = T, locale = 'en_US.UTF-8'),
+    Week = stringi::stri_datetime_fields(Date)$WeekOfMonth
+    )
+
+wordle_data %>% 
+  filter(Month == "November", Year == 2024) %>% 
+  select(Week, Date, everything()) %>% 
+  arrange(Date)
+
+labels_color <- 'grey30'
+
+
+november_data <- wordle_data %>% 
+  filter(Month == "November", Year == 2024) %>% 
+  mutate(n = Has.repeated.letters)
+
+# calendar heatmap
+ggplot(november_data, aes(x = Weekday, y = 5 - Week)) +
+  geom_tile(aes(fill = n), color = "black") +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  facet_wrap(vars(Month), ncol = 1) +
+  coord_equal(expand = FALSE) +
+  labs(title = "Words with Repeated Letters (November 2024)",
+       fill = "Has Repeated Letters") +
+  theme_minimal()
+
+# calendar heatmap
+ggplot(november_data, aes(x = Weekday, y = 5 - Week)) +
+  geom_tile(aes(fill = n), color = "black") +
+  geom_text(
+    aes(label = day), 
+    hjust = 0, vjust = 1.2,  # top-left corner
+    size = 3, color = "black"
+  ) +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  facet_wrap(vars(month), ncol = 1) +
+  coord_equal(expand = FALSE) +
+  labs(title = "Words with Repeated Letters (November 2024)",
+       fill = "Has Repeated Letters") +
+  theme_minimal()
+
+
+```
+
+```{r}
+
+library(calendR)
+
+november_data <- wordle_data %>%
+  mutate(Date = as.Date(Date, format = "%b %d %Y")) %>%
+  filter(Month == "November", Year == 2024)
+
+# Create vector of colors (1 = has repeated letters)
+colors <- ifelse(november_data$`Has.repeated.letters` == 1, "steelblue", "grey80")
+
+calendR(
+  year = 2024,
+  month = 11,
+  start = "S",
+  special.days = november_data$Day,
+  special.col = colors,
+  title = "Words with Repeated Letters (Nov 2024)"
+)
+
+
+```
+
+```{r}
+library(calendR)
+library(dplyr)
+
+# make sure Date is actually a date
+wordle_data <- wordle_data %>%
+  mutate(Date = as.Date(Date, format = "%b %d %Y"))
+
+# filter November 2024
+november_data <- wordle_data %>%
+  filter(Month == "November", Year == 2024)
+
+repeated_days <- wordle_data %>%
+  filter(Month == "November", Year == 2024, `Has.repeated.letters` == 1) %>%
+  pull(Day)
+
+repeated_days
+
+
+# build the calendar
+calendR(
+  year = 2024,
+  month = 11,
+  start = "S",
+  title = "Words with Repeated Letters (November 2024)",
+  special.days = repeated_days,
+  special.col = "lightblue"
+)
+
+november_data %>% 
+  arrange(Date)
+
+
+
+```
+
+how to do tabs 
+
+## Bigram Position Visualizations {.tabset}
+
+### B1
+```{r}
+B1_plot
+```
+
+### B2
+```{r}
+B2_plot
+```
+
+### B3
+```{r}
+B3_plot
+```
+
+### B4
+```{r}
+B4_plot
+```
 

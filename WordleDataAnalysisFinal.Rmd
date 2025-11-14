@@ -640,12 +640,63 @@ This suggests that the puzzle selection process does not follow a noticeable mon
 
 
 
+# Is there a relationship between a word’s frequency in English and its Scrabble point value?
+
+Wordle words vary in both their frequency in the English language and their Scrabble score. One might expect that rarer words, which are less commonly used, would contain more unusual letters like Q, Z, or X and therefore have higher Scrabble scores. Conversely, more common words might use more frequent letters like E, A, or R and tend to have lower Scrabble values. By examining how Scrabble scores vary across words of different frequency categories, we can explore whether Wordle favors high-scoring words or if score and frequency are largely independent.
+
+```{r}
+ggplot(wordle_data, aes(x = Frequency.category, y = Scrabble.score, fill = Frequency.category)) +
+  geom_violin() +
+  geom_jitter(width = 0.1, alpha = 0.3, color = "black", size = 1.5) +
+  labs(
+    title = "Scrabble Score by Word Frequency Category",
+    x = "Word Frequency Category",
+    y = "Scrabble Score"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12),
+    legend.position = "none"
+  )
+```
+
+The violin plot shows the distribution of Scrabble scores for rare, uncommon, and common Wordle words. Interestingly, there is no strong correlation between a word’s frequency and its Scrabble score. Rare words do not consistently have higher scores, and common words do not always have lower scores.
 
 
+```{r}
+wordle_data %>%
+  group_by(Frequency.category) %>%
+  summarise(
+    Highest_Score = max(Scrabble.score),
+    Highest_Word = Answer[which.max(Scrabble.score)],
+    Lowest_Score = min(Scrabble.score),
+    Lowest_Word = Answer[which.min(Scrabble.score)]
+  ) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "90%", height = "50%")
+```
 
+Looking at the extremes of Scrabble scores across Wordle words, it’s interesting to note that the highest scoring words in each frequency category all contain a Z, one of the highest-value letters in Scrabble. 
 
-
-
-
+On the other hand, the lowest-scoring words score only 5 points and contain more common letters. This shows how the inclusion of high value letters like Z dramatically affects a word’s score, regardless of how common or rare the word is.
 
 # Summary
+
+This analysis of 1,600+ Wordle solutions highlights several interesting patterns in English word structure and Wordle’s puzzle selection.
+
+- Wordle words follow subtle patterns: many start with common clusters (ST, SH, BR) and end with frequent suffixes (ER, CH, GE).
+
+- Repeated-letter words show no clear seasonal or monthly trend—they appear randomly.
+
+- High Scrabble scores are driven by rare letters like Z, while common letters keep scores low, regardless of word frequency.
+
+Takeaway: 
+
+Even though Wordle answers are designed to feel random, clear patterns emerge: many words start with common consonant clusters like ST, SH, or BR and end with frequent suffixes such as ER, CH, or GE. 
+
+Words with repeated letters appear unpredictably across months and years, showing no obvious seasonal trends. Scrabble scores are more influenced by the presence of high-value letters like Z than by how common a word is. Understanding these patterns can help guide smarter guesses, emphasizing structure and letter value over word rarity.
+
+

@@ -12,9 +12,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction 
 
-Wordle is a popular online word puzzle where players guess a five letter word within six attempts. Each guess provides feedback: letters in the correct position are highlighted in green, letters in the word but in the wrong position appear yellow, and letters not in the word are gray. Beyond being an engaging game, Wordle presents a rich dataset for analysis. Words have unique characteristics, such as vowel-consonant balance, repeated letters, rare letters, Scrabble scores, and frequency of usage.
+Wordle is a daily word puzzle in which players attempt to guess a five-letter English word within six attempts. Each guess provides structured feedback based on letter correctness and position. Although the game appears simple, its dataset of solutions contains linguistic patterns that can be statistically analyzed.
 
-This analysis explores these patterns across 1600+ Wordle words to uncover trends in word selection, letter placement, and other structural features. By examining the relationships between word properties, frequency, and temporal trends, this project aims to provide insights into the hidden patterns that shape the daily puzzle.
+The goal of this project is to understand the structure of the official Wordle answer list. By examining letter usage, positional behavior, bigram patterns, repeated-letter distributions, and relationships between word frequency and Scrabble score, this project answers the broader question:
+
+**Does Wordle follow predictable linguistic patterns, and how can these patterns improve player strategy?**
+
+This problem is meaningful because understanding these trends allows players to make more informed guesses and reveals how puzzle designers curate word lists.
 
 # Questions to Answer
 This analysis focuses on the following core questions: 
@@ -31,10 +35,17 @@ This analysis focuses on the following core questions:
 # Data Preparation
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # libraries 
-# need to hide output 
+library(ggplot2)    # plot visualization
+library(dplyr)      # summarizing, filtering, etc
+library(tidyr)      # reshaping data (pivot, etc)
+library(kableExtra) # table formatting
+library(gridExtra)  # arranging plots
+library(patchwork)  #
+library(calendR)    # generating monthly heatmaps
 library(lubridate)
+library(ggthemes)
 ```
 
 # Data Analysis

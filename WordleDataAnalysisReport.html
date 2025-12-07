@@ -359,19 +359,21 @@ display: none;
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>Wordle is a popular online word puzzle where players guess a five
-letter word within six attempts. Each guess provides feedback: letters
-in the correct position are highlighted in green, letters in the word
-but in the wrong position appear yellow, and letters not in the word are
-gray. Beyond being an engaging game, Wordle presents a rich dataset for
-analysis. Words have unique characteristics, such as vowel-consonant
-balance, repeated letters, rare letters, Scrabble scores, and frequency
-of usage.</p>
-<p>This analysis explores these patterns across 1600+ Wordle words to
-uncover trends in word selection, letter placement, and other structural
-features. By examining the relationships between word properties,
-frequency, and temporal trends, this project aims to provide insights
-into the hidden patterns that shape the daily puzzle.</p>
+<p>Wordle is a daily word puzzle in which players attempt to guess a
+five-letter English word within six attempts. Each guess provides
+structured feedback based on letter correctness and position. Although
+the game appears simple, its dataset of solutions contains linguistic
+patterns that can be statistically analyzed.</p>
+<p>The goal of this project is to understand the structure of the
+official Wordle answer list. By examining letter usage, positional
+behavior, bigram patterns, repeated-letter distributions, and
+relationships between word frequency and Scrabble score, this project
+answers the broader question:</p>
+<p><strong>Does Wordle follow predictable linguistic patterns, and how
+can these patterns improve player strategy?</strong></p>
+<p>This problem is meaningful because understanding these trends allows
+players to make more informed guesses and reveals how puzzle designers
+curate word lists.</p>
 </div>
 <div id="questions-to-answer" class="section level1">
 <h1>Questions to Answer</h1>
@@ -393,13 +395,15 @@ its Scrabble point value?</li>
 <div id="data-preparation" class="section level1">
 <h1>Data Preparation</h1>
 <pre class="r"><code># libraries 
-# need to hide output 
-library(lubridate)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;lubridate&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     date, intersect, setdiff, union</code></pre>
+library(ggplot2)    # plot visualization
+library(dplyr)      # summarizing, filtering, etc
+library(tidyr)      # reshaping data (pivot, etc)
+library(kableExtra) # table formatting
+library(gridExtra)  # arranging plots
+library(patchwork)  #
+library(calendR)    # generating monthly heatmaps
+library(lubridate)
+library(ggthemes)</code></pre>
 </div>
 <div id="data-analysis" class="section level1">
 <h1>Data Analysis</h1>

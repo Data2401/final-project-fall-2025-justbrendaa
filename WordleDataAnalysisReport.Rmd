@@ -1,0 +1,62 @@
+---
+title: "Wordle DataAnalysis Report"
+author: "Brenda Luis"
+date: "2025-12-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Introduction 
+
+Wordle is a popular online word puzzle where players guess a five letter word within six attempts. Each guess provides feedback: letters in the correct position are highlighted in green, letters in the word but in the wrong position appear yellow, and letters not in the word are gray. Beyond being an engaging game, Wordle presents a rich dataset for analysis. Words have unique characteristics, such as vowel-consonant balance, repeated letters, rare letters, Scrabble scores, and frequency of usage.
+
+This analysis explores these patterns across 1600+ Wordle words to uncover trends in word selection, letter placement, and other structural features. By examining the relationships between word properties, frequency, and temporal trends, this project aims to provide insights into the hidden patterns that shape the daily puzzle.
+
+# Questions to Answer
+
+1. q1
+
+2. q2
+
+
+
+# Data Preparation
+
+
+```{r}
+# libraries 
+# need to hide output 
+library(lubridate)
+```
+
+# Data Analysis
+
+
+### Question 1
+question background and info 
+
+```{r}
+# code
+```
+interpretation of output. 
+
+
+
+
+### Question 2
+question background and info 
+
+```{r}
+# code
+```
+interpretation of output. 
+
+
+
+# Summary 
+
+

@@ -20,6 +20,8 @@ The goal of this project is to understand the structure of the official Wordle a
 
 This problem is meaningful because understanding these trends allows players to make more informed guesses and reveals how puzzle designers curate word lists.
 
+<hr style="border:1px solid gray">
+
 # Questions to Answer
 This analysis focuses on the following core questions: 
 
@@ -30,34 +32,190 @@ This analysis focuses on the following core questions:
 5. Do repeated letter Wordle answers follow seasonal or monthly patterns across different years?
 6. Is there a relationship between a word’s frequency in English and its Scrabble point value?
 
+<hr style="border:1px solid gray">
 
-
-# Data Preparation
-
+# Required Packages
 
 ```{r message=FALSE, warning=FALSE}
 # libraries 
 library(ggplot2)    # plot visualization
 library(dplyr)      # summarizing, filtering, etc
 library(tidyr)      # reshaping data (pivot, etc)
-library(kableExtra) # table formatting
-library(gridExtra)  # arranging plots
-library(patchwork)  #
+library(kableExtra) # nice looking tables 
+library(gridExtra)  # arranging multiple plots next to each other
+library(patchwork)  # another tool to combine plots
 library(calendR)    # generating monthly heatmaps
-library(lubridate)
-library(ggthemes)
+library(lubridate)  # date handling
+library(ggthemes)   # different plot themes
 ```
 
-# Data Analysis
+<hr style="border:1px solid gray">
+
+# Dataset Information {.tabset}
+The dataset contains official Wordle answers from 2021 to 2025, scraped from:
+
+<https://wordfinder.yourdictionary.com/wordle/answers/>
+
+Each row represents one day’s solution.
+
+wordle_data is a data frame with 1609 rows and 28 variables:
 
 
-### Question 1
-question background and info 
+```{r echo=FALSE}
+variable_info <- data.frame(
+  Variable = c(
+    "Date","Wordle.Number","Answer","Weekday","Month","Day","Year",
+    "Has.Repeated.Letters","All.unique.letters","Starts.with.vowel",
+    "Ends.with.vowel","Num.vowels","Num.consonants","Ends.with.Y",
+    "Has.rare.letter","Contains.common.prefix","Contains.common.suffix",
+    "P1–P5","Word.Frequency","Scrabble.score","Frequency.category",
+    "Top.row.letters","Mid.row.letters","Bottom.row.letters"
+  ),
+  Type = c(
+    "date","integer","character","character","character","integer","integer",
+    "integer","integer","integer","integer","integer","integer","integer",
+    "integer","integer","integer","character","numeric","integer",
+    "character","integer","integer","integer"
+  ),
+  Description = c(
+    "Publication date of the puzzle",
+    "Sequential ID of the puzzle",
+    "Correct 5-letter Wordle answer",
+    "Day of the week",
+    "Month name",
+    "Day of month",
+    "Year",
+    "1 if the word contains repeated letters",
+    "1 if all letters in the word are unique",
+    "1 if the word starts with a vowel",
+    "1 if the word ends with a vowel",
+    "Number of vowels",
+    "Number of consonants",
+    "1 if the word ends with 'Y'",
+    "1 if the word contains Q, Z, X, or J",
+    "1 if it contains RE, UN, IN, IM, DE, EX, or BE",
+    "1 if it contains ED, ER, LY, ES, ST, NT, TH, CH, SH",
+    "Letters in each of the 5 positions",
+    "English frequency score (0–1)",
+    "Scrabble point value",
+    "Frequency category",
+    "Count of top-row keyboard letters",
+    "Count of middle-row keyboard letters",
+    "Count of bottom-row keyboard letters"
+  )
+)
+
+```
+
+```{r echo=FALSE}
+variable_info %>% 
+  kbl() %>% 
+  kable_styling(full_width = TRUE) %>% 
+  scroll_box(width = "100%", height = "350px")
+
+```
+
+<hr style="border:1px solid gray">
+
+# Data Loading
 
 ```{r}
-# code
+# load data from csv
+wordle_data <- read.csv("wordle_data.csv")
+
+# convert Date column from string to date object
+wordle_data <- wordle_data %>% 
+  mutate(Date = as.Date(Date, format = "%Y-%m-%d"))
+
+# convert Month and Weekday columns to factors
+wordle_data <- wordle_data %>%
+  mutate(
+    Month = factor(Month, levels = month.name, ordered = TRUE),
+    Weekday = factor(Weekday, levels = c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"), ordered = TRUE)
+  )
+
+# display random sample from data
+wordle_data %>%  
+  sample_n(10) %>% 
+  arrange(Date) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "100%", height = "400px")
 ```
-interpretation of output. 
+
+
+<hr style="border:1px solid gray">
+
+# Data Analysis 
+
+
+### Question 1 - Which letters appear more frequently in Wordle solutions? {.tabset}
+This project begins by looking at how often each letter appears across all Wordle solutions. Even though every answer is a five-letter English word, some letters show up much more often than others. Checking this overall distribution helps us understand the general patterns Wordle follows. Common letters make certain guesses stronger, while rare letters can make a puzzle harder if they appear. The table and bar chart below show how each letter is used in the full list of solutions.
+
+#### letter frequencies table
+```{r message=FALSE, warning=FALSE}
+# pulling letters, counts, and type
+letter_frequency <- wordle_data %>% 
+  select(P1, P2, P3, P4, P5) %>% 
+  pivot_longer(cols = c(P1, P2, P3, P4, P5), names_to = "Position", values_to = "Letter") %>% 
+  group_by(Letter) %>% 
+  summarise(Counts = n()) %>% 
+  arrange(-Counts) %>% 
+  mutate(Type = ifelse(Letter %in% c("A","E","I","O","U"), "Vowel", "Consonant"))
+
+# table displaying data
+letter_frequency %>%  
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "40%", height = "400px")
+```
+
+#### frequencies bar graph 
+```{r}
+# bar graph to display letter frequency
+letter_frequency %>% 
+  ggplot(aes(x = reorder(Letter,-Counts), y = Counts, fill = Type)) + 
+  geom_col() +
+  labs(
+    title = "Frequency of Letters in Wordle Solutions",
+    x = "Letter",
+    y = "Count",
+    fill = "Type"
+  ) + 
+  scale_fill_manual(values = c("Vowel" = "#485c63", "Consonant" = "#8facb5")) + 
+  theme_tufte() + 
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),   # title size
+    axis.title.x = element_text(size = 20),                # X label
+    axis.title.y = element_text(size = 20),                # Y label
+    axis.text.x = element_text(size = 15), # letter labels
+    axis.text.y = element_text(size = 15),                  # position numbers
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 12)
+  )
+  
+```
+
+#### most common letter
+```{r}
+# most common letter
+letter_frequency %>% 
+  summarise(most_common_letter = Letter[which.max(Counts)],
+            frequency = max(Counts))%>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "50%")
+
+letter_frequency %>% 
+  summarise(least_common_letter = Letter[which.min(Counts)],
+            frequency= min(Counts))%>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "50%")
+```
+
+#### result interpretation
+The results show that E is the most common letter, followed by A, R, O, and T. These letters appear throughout many standard English words, so it makes sense that Wordle uses them often. On the other end, letters like X, Z, Q, and J appear very rarely. Because of this gap between common and uncommon letters, first guesses that include frequent vowels and consonants are usually more effective. This gives us a clearer picture of Wordle’s overall word patterns before we look at *where* the letters appear inside the words.
 
 
 

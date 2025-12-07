@@ -17,10 +17,14 @@ Wordle is a popular online word puzzle where players guess a five letter word wi
 This analysis explores these patterns across 1600+ Wordle words to uncover trends in word selection, letter placement, and other structural features. By examining the relationships between word properties, frequency, and temporal trends, this project aims to provide insights into the hidden patterns that shape the daily puzzle.
 
 # Questions to Answer
+This analysis focuses on the following core questions: 
 
-1. q1
-
-2. q2
+1. Which letters appear more frequently in Wordle solutions?
+2. Which letters appear more frequently in Wordle solutions by position?
+3. Which letter pairs (bigrams) appear most often in Wordle solutions?
+4. How does the bigram frequency change depending on where they appear in the word?
+5. Do repeated letter Wordle answers follow seasonal or monthly patterns across different years?
+6. Is there a relationship between a word’s frequency in English and its Scrabble point value?
 
 
 

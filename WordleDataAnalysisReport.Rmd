@@ -1,5 +1,5 @@
 ---
-title: "Wordle DataAnalysis Report"
+title: "Wordle Data Analysis Report"
 author: "Brenda Luis"
 date: "2025-12-03"
 output: html_document
@@ -10,9 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-# Introduction 
+# **Introduction**
 
-Wordle is a daily word puzzle in which players attempt to guess a five-letter English word within six attempts. Each guess provides structured feedback based on letter correctness and position. Although the game appears simple, its dataset of solutions contains linguistic patterns that can be statistically analyzed.
+Wordle is a daily word puzzle in which players attempt to guess a five-letter English word within six attempts. Each guess provides structured feedback based on letter accuracy and placement. Although the game appears simple, its dataset of solutions contains linguistic patterns that can be statistically analyzed.
 
 The goal of this project is to understand the structure of the official Wordle answer list. By examining letter usage, positional behavior, bigram patterns, repeated-letter distributions, and relationships between word frequency and Scrabble score, this project answers the broader question:
 
@@ -22,7 +22,7 @@ This problem is meaningful because understanding these trends allows players to 
 
 <hr style="border:1px solid gray">
 
-# Questions to Answer
+# **Questions to Answer**
 This analysis focuses on the following core questions: 
 
 1. Which letters appear more frequently in Wordle solutions?
@@ -34,7 +34,7 @@ This analysis focuses on the following core questions:
 
 <hr style="border:1px solid gray">
 
-# Required Packages
+# **Required Packages**
 
 ```{r message=FALSE, warning=FALSE}
 # libraries 
@@ -51,7 +51,7 @@ library(ggthemes)   # different plot themes
 
 <hr style="border:1px solid gray">
 
-# Dataset Information {.tabset}
+# **Dataset Information** 
 The dataset contains official Wordle answers from 2021 to 2025, scraped from:
 
 <https://wordfinder.yourdictionary.com/wordle/answers/>
@@ -117,7 +117,7 @@ variable_info %>%
 
 <hr style="border:1px solid gray">
 
-# Data Loading
+# **Data Loading**
 
 ```{r}
 # load data from csv
@@ -146,13 +146,20 @@ wordle_data %>%
 
 <hr style="border:1px solid gray">
 
-# Data Analysis 
+# **Data Analysis**
 
 
-### Question 1 - Which letters appear more frequently in Wordle solutions? {.tabset}
-This project begins by looking at how often each letter appears across all Wordle solutions. Even though every answer is a five-letter English word, some letters show up much more often than others. Checking this overall distribution helps us understand the general patterns Wordle follows. Common letters make certain guesses stronger, while rare letters can make a puzzle harder if they appear. The table and bar chart below show how each letter is used in the full list of solutions.
+### **Question 1 - Which letters appear more frequently in Wordle solutions? **
+This section analyzes the overall distribution of letters across all Wordle solutions. Each answer contains five letters, but their frequencies vary widely. Identifying these differences helps show which letters Wordle relies on most often and establishes a baseline for understanding more detailed patterns in later sections.
 
-#### letter frequencies table
+<br>
+
+**Step 1: Extracting and Counting Letter Frequencies**
+
+The code below retrieves the letter in each of the five positions (P1–P5), reshapes them into a long format, and counts how often each letter appears. Letters are also labeled as vowels and consonants to support interpretation of the results.
+
+<br>
+
 ```{r message=FALSE, warning=FALSE}
 # pulling letters, counts, and type
 letter_frequency <- wordle_data %>% 
@@ -167,10 +174,21 @@ letter_frequency <- wordle_data %>%
 letter_frequency %>%  
   kbl() %>% 
   kable_styling() %>% 
-  scroll_box(width = "40%", height = "400px")
+  scroll_box(width = "40%", height = "300px")
 ```
 
-#### frequencies bar graph 
+<br>
+
+This table shows the raw frequency counts for every letter that appears in any position of a Wordle solution. These values give an overview of how commonly each letter is used across the dataset.
+
+<br>
+
+**Step 2: Visualizing the letter frequencies**
+
+A bar plot allows for direct comparison between more and less common letters, emphasizing the contrast between highly frequent and rarely used characters.
+
+<br>
+
 ```{r}
 # bar graph to display letter frequency
 letter_frequency %>% 
@@ -196,7 +214,14 @@ letter_frequency %>%
   
 ```
 
-#### most common letter
+<br>
+
+The plot illustrates the clear separation between frequently and infrequently used letters. Letters such as E, A, R, O, and T appear far more often than others, while letters including X, Z, Q, and J occur rarely. This matters for Wordle strategy, since selecting guesses with high-frequency letters increases the chance of matching one or more letters in the target word, making them generally more efficient opening choices.
+
+<br>
+
+**Step 3: Identifying the most and least common letters**
+
 ```{r}
 # most common letter
 letter_frequency %>% 
@@ -205,7 +230,10 @@ letter_frequency %>%
   kbl() %>% 
   kable_styling() %>% 
   scroll_box(width = "50%")
+```
+<br>
 
+```{r}
 letter_frequency %>% 
   summarise(least_common_letter = Letter[which.min(Counts)],
             frequency= min(Counts))%>% 
@@ -213,23 +241,275 @@ letter_frequency %>%
   kable_styling() %>% 
   scroll_box(width = "50%")
 ```
+<br>
 
-#### result interpretation
-The results show that E is the most common letter, followed by A, R, O, and T. These letters appear throughout many standard English words, so it makes sense that Wordle uses them often. On the other end, letters like X, Z, Q, and J appear very rarely. Because of this gap between common and uncommon letters, first guesses that include frequent vowels and consonants are usually more effective. This gives us a clearer picture of Wordle’s overall word patterns before we look at *where* the letters appear inside the words.
+These tables identify the single most common and least common letters in the full Wordle dataset. The first table shows that E appears 876 times, making it the most frequently used letter across all solutions. In contrast, the second table shows that J appears only 19 times, the lowest count among all letters. These values highlight the extremes of the letter-frequency distribution and reinforce the patterns observed earlier in the summary table and bar chart.
+
+<br>
+
+Overall, the results show that E is the most common letter, followed by A, R, O, and T. These letters appear throughout many standard English words, so it makes sense that Wordle uses them often. On the other end, letters such as X, Z, Q, and J appear very rarely. Because of this gap between common and uncommon letters, first guesses that include frequent vowels and consonants are usually more effective. This overview gives a clearer picture of Wordle’s overall letter patterns before examining more detailed structural trends within the words.
+
+While overall letter frequency provides useful insight, it does not capture how letters behave within specific positions of a word. Wordle solutions may rely on certain letters more heavily at the beginning, middle, or end of a word, reflecting common patterns found in English word structure. Understanding these positional tendencies helps refine guessing strategies further. For this reason, the next section examines which letters appear most frequently in each of the five positions of a Wordle solution.
+
+---
+
+### **Question 2 - Which letters appear more frequently in Wordle solutions by position?**
+
+This section examines whether certain letters are more common in specific positions within Wordle solutions. English words often follow predictable structural patterns, such as frequent starting consonants (e.g., S, C, T) and common ending letters (e.g., E, Y). Analyzing positional frequency allows us to see how closely Wordle solutions follow these linguistic tendencies. Understanding these patterns can also improve strategic guessing by highlighting which letters are more informative depending on their position in the word.
+
+<br>
+
+**Step 1: Identifying the most frequent letters in each position**
+
+The following code calculates how often each letter appears in positions P1 through P5. By reshaping the dataset and summarizing counts within each position, we can identify the top-position letters and compare trends across positions.
+
+```{r message=FALSE, warning=FALSE}
+# pulling positional letter frequency data
+positional_letter_frequency <- wordle_data %>% 
+  select(P1, P2, P3, P4, P5) %>% 
+  pivot_longer(cols = c(P1, P2, P3, P4, P5), names_to = "Position", values_to = "Letter") %>% 
+  group_by(Position, Letter) %>% 
+  summarise(Counts = n()) %>% 
+  arrange(Position, -Counts)
+
+# table displaying data
+positional_letter_frequency %>% 
+  group_by(Position) %>% 
+  slice_max(Counts, n = 3) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "50%", height = "400px")
+```
+
+<br>
+
+The positional frequency table shows clear patterns in how letters tend to appear in each place within a Wordle solution. In Position 1, the most frequent starting letters are S with 237 occurrences, C with 133 occurrences, and B with 121 occurrences. These findings match common English word patterns where many words begin with strong consonants. In Position 2, the most frequent letters are A with 206 occurrences, O with 202 occurrences, and R with 189 occurrences. In Position 3, vowels take the lead, with A appearing 241 times, O appearing 188 times, and I appearing 175 times.
+
+Position 4 becomes more structured toward the end of the word. The most frequent letters in this position are E with 207 occurrences, N with 130 occurrences, and S with 120 occurrences. Finally, Position 5 shows the strongest pattern in the entire dataset. E appears 327 times, Y appears 221 times, and T appears 186 times. These values demonstrate that the first and last positions follow predictable English word structures, and the middle positions often support vowel placement or transitional consonants.
+
+<br>
+
+**Step 2: Visualizing positional frequency using a heatmap**
+
+To observe the full distribution of all letters across all positions, the code below constructs a heatmap. Warmer (darker) colors represent higher frequencies, while lighter areas indicate letters that rarely occur in that position.
+
+```{r message=FALSE, warning=FALSE, fig.width = 12, fig.height=8}
+# pull all letters 
+all_letters <- sort(unique(positional_letter_frequency$Letter))
+
+# vowels
+vowels <- c("A", "E", "I", "O", "U")
+
+# create letter vector where vowels are in the front
+# will use this to make factor
+letter_vector <- c(
+  vowels,
+  sort(setdiff(all_letters, vowels))
+)
+
+# making letters factors
+positional_letter_frequency <- positional_letter_frequency %>%
+  mutate(Letter = factor(Letter, levels = letter_vector))
 
 
+# reordering positions so P1 is at the top
+# default order puts P5 first so I change that here
+positional_letter_frequency <- positional_letter_frequency %>% 
+  mutate(Position = factor(Position, levels = c("P5", "P4", "P3", "P2", "P1")))
 
 
-### Question 2
-question background and info 
+# heatmap to show letter frequency by position
+positional_letter_frequency %>%
+  ggplot(aes(x = Letter, y = Position, fill = Counts)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = Counts), color = "white", size = 4) +
+  labs(
+    title = "Letter Frequency by Position in Wordle Solutions",
+    x = "Letter",
+    y = "Position"
+  ) +
+  scale_fill_gradient(
+    low = "grey",   
+    high = "#08306b"  
+  ) +
+  theme_tufte() + 
+  theme(
+    plot.title = element_text(size = 30, face = "bold"),   # title size
+    axis.title.x = element_text(size = 20),                # X label
+    axis.title.y = element_text(size = 20),                # Y label
+    axis.text.x = element_text(size = 15),                 # letter labels
+    axis.text.y = element_text(size = 15),                 # position numbers
+    legend.title = element_text(size = 20),
+    legend.text = element_text(size = 18)
+  )
+  
+```
+
+<br>
+
+The heatmap produces a similar conclusion by displaying how these frequencies look across all letters and positions. Strong concentrations appear where large counts were observed in the table. S is heavily used at the beginning of words. A dominates Positions 2 and 3. E has a major presence in Position 4, and it is especially common in Position 5 where it reaches 327 occurrences. In contrast, letters such as J, Q, and V rarely appear in any position and are completely absent from the final position. These patterns show that Wordle solutions follow familiar English structures, which helps explain why certain guesses eliminate more possibilities than others when players know the position of a revealed letter.
+
+---
+
+Overall, the positional results show that Wordle solutions follow familiar patterns found in standard English words. Strong consonants such as S, C, and B appear very often at the beginning of words, while the ending position is dominated by E, Y, and T. The middle positions are more flexible, but they still show clear trends, especially the high presence of vowels in Positions 2 and 3. These patterns help explain why some guesses narrow down the possibilities more effectively than others. Knowing which letters commonly appear in each position allows players to interpret feedback more efficiently and update their guesses in a more informed way. With these positional patterns established, the next step is to examine how letters behave in pairs, which is addressed in the following section on bigram frequency.
+
+---
+
+### **Fun Fact!**
+
+One observation I have made while playing Wordle is that five-letter solutions ending in the letter “S” are relatively uncommon, especially when compared to how frequently plurals occur in everyday English. A typical plural formed by adding “S” to a four-letter base word appears far less often in the official Wordle answer list.
+
+Examples of these plural formations include:
+
+CART → CARTS
+
+BOOK → BOOKS
+
+CARD → CARDS
+
+Based on the positional data, only 23 out of more than 1,600 Wordle solutions end with S. This suggests that simple plural forms are not commonly selected as answers. This observation refers specifically to plural endings and is not related to past-tense endings such as “ED”.
+
+<br>
+
+The list below shows all Wordle solutions in the dataset that end with “S”:
 
 ```{r}
-# code
+# filter words that end with S
+words_end_s <- wordle_data %>% 
+  filter(P5 == "S") %>% 
+  select(Answer)
+
+# display table
+words_end_s %>%
+  kbl(col.names = "Word Ending in S") %>%
+  kable_styling() %>%
+  scroll_box(width = "40%", height = "250px")
 ```
-interpretation of output. 
+
+<br>
+
+Although these 23 solutions end with S, none of them function as regular English plurals created by adding S to a base word. In every case, the S is part of the word’s original spelling rather than a plural marker. Examples include roots like CHAOS, ETHOS, and LOCUS, or nouns such as GLASS, PRESS, and CROSS where the S is not grammatical.
+
+This confirms that Wordle avoids regular plurals entirely. Even though they are common in English, they are extremely rare in Wordle solutions. For strategy purposes, this means that when the last letter is unknown, guessing a word ending in S is usually not a productive choice, especially compared to endings like E, Y, or T, which are far more common.
+
+---
+
+### **So *how* is this data useful?**
+
+Once we understand which letters are most common in specific positions, we can apply this information directly to solving Wordle. Positional frequency becomes especially helpful when the player knows four out of five letters and needs to choose the most probable ending.
+
+To illustrate this, consider the partial Wordle pattern BAKE_.
+
+Possible candidates include:
+
+  - BAKED
+  - BAKER
+  - BAKES
+
+All three words are valid English, so the challenge becomes identifying which ending letter is most likely based on how Wordle typically constructs its answers. Because this is a position-specific question, we turn to the data for Position 5, which summarizes how often each letter appears at the end of a Wordle solution.
+
+<br>
+
+```{r fig.width = 12, fig.height=3}
+# filtering for just position 5
+position5_letter_freq <- positional_letter_frequency %>% 
+  filter(Position == "P5")
+
+# heatmap figure
+position5_letter_freq %>%
+  ggplot(aes(x = reorder(Letter, -Counts), y = "P5", fill = Counts)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = Counts), color = "white", size = 5) +
+  labs(
+    title = "Letter Frequency in Position 5",
+    x = "Letter",
+    y = "Position 5"
+  ) +
+  scale_fill_gradient(
+    low = "grey",
+    high = "#08306b"   # dark
+  ) +
+  theme_calc() +
+  theme(
+  axis.text.y = element_blank(),
+  axis.ticks.y = element_blank(),
+  plot.title = element_text(size = 20, face = "bold"),
+  axis.text.x = element_text(size = 15)
+  )
+```
+
+<br>
+
+To compare the possible endings directly, the following heatmap shows the frequencies for D, R, and S in Position 5:
+
+<br>
+
+```{r fig.width = 8, fig.height=2}
+# subset with only D R S 
+position5_subset <- position5_letter_freq %>%
+  filter(Letter %in% c("D", "R", "S"))
 
 
+# same plot as before just changed the data filtered in 
+position5_subset %>%
+  ggplot(aes(x = reorder(Letter, -Counts), y = "P5", fill = Counts)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = Counts), color = "white", size = 5) +
+  labs(
+    title = "Letter Frequency in Position 5",
+    x = "Letter",
+    y = "Position 5"
+  ) +
+  scale_fill_gradient(
+    low = "grey",
+    high = "#08306b"   # dark
+  ) +
+  theme_calc() +
+  theme(
+  axis.text.y = element_blank(),
+  axis.ticks.y = element_blank(),
+  plot.title = element_text(size = 20, face = "bold"),
+  axis.text.x = element_text(size = 15)
+  )
+```
+<br>
 
+The mini heatmap makes the comparison clearer. Among the three possible endings, R appears with the highest frequency in Position 5, D appears moderately often, and S is much less common. Based on these positional trends, BAKER is statistically the most likely answer for the pattern BAKE_.
+
+
+---
+
+### **Question 3 – Which letter pairs (bigrams) appear most often in Wordle solutions?**
+
+English words rely heavily on recurring two-letter sequences, and many of these patterns appear in Wordle as well. A bigram is simply a pair of consecutive letters. Each Wordle answer contains four bigrams: letters (1–2), (2–3), (3–4), and (4–5). By counting how often each bigram appears across all solutions, we can identify which pairs Wordle uses most frequently.
+
+The table below lists the ten most common bigrams across the entire dataset. Many of these pairs reflect standard English structure, such as common prefixes, vowel-consonant transitions, or typical word endings.
+
+```{r fig.width = 12, fig.height=8}
+# pulling bigrams
+bigrams <- wordle_data %>% 
+  mutate (B1 = paste0(P1, P2),  # paste0 no separator by default
+          B2 = paste0(P2, P3),
+          B3 = paste0(P3, P4),
+          B4 = paste0(P4, P5)) %>% 
+  select(B1, B2, B3, B4) %>% 
+  pivot_longer(cols = everything(), names_to = "Position", values_to = "Bigram") %>% # names_to = col name to create from specified cols before, values_to = new column to create from values in each cell.
+  group_by(Bigram) %>% 
+  summarise(Counts = n()) %>% 
+  arrange(-Counts)
+
+
+bigrams %>% 
+  head(10) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "50%", height = "250px")
+
+```
+
+<br>
+
+After that, the bar chart visualizes the twenty five most frequent bigrams. ER occurs most often, followed by IN, ST, RA, and AR. These patterns appear in familiar English endings (like -ER) or in common roots (such as IN- or RA-). Because these pairs occur so frequently in Wordle answers, they help explain why some guesses reduce the search space more effectively than others. A guess containing high-frequency bigrams is more likely to match part of the target word, even if the entire guess is incorrect.
 # Summary 
 
 

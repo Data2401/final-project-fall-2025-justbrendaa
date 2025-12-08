@@ -481,9 +481,9 @@ The mini heatmap makes the comparison clearer. Among the three possible endings,
 
 ### **Question 3 – Which letter pairs (bigrams) appear most often in Wordle solutions?**
 
-English words rely heavily on recurring two-letter sequences, and many of these patterns appear in Wordle as well. A bigram is simply a pair of consecutive letters. Each Wordle answer contains four bigrams: letters (1–2), (2–3), (3–4), and (4–5). By counting how often each bigram appears across all solutions, we can identify which pairs Wordle uses most frequently.
+English words often rely on recurring two-letter sequences, and these patterns appear throughout Wordle solutions as well. A bigram is a pair of consecutive letters. Each Wordle answer contains four bigrams that correspond to the following positions: letters (1,2), (2,3), (3,4), and (4,5). By counting how often each bigram appears across all solutions, we can identify the pairs that Wordle uses the most frequently.
 
-The table below lists the ten most common bigrams across the entire dataset. Many of these pairs reflect standard English structure, such as common prefixes, vowel-consonant transitions, or typical word endings.
+The table below lists the ten most common bigrams in the dataset. Many of these pairs reflect familiar English patterns, including common prefixes, vowel to consonant transitions, and typical word endings.
 
 ```{r fig.width = 12, fig.height=8}
 # pulling bigrams
@@ -509,7 +509,578 @@ bigrams %>%
 
 <br>
 
-After that, the bar chart visualizes the twenty five most frequent bigrams. ER occurs most often, followed by IN, ST, RA, and AR. These patterns appear in familiar English endings (like -ER) or in common roots (such as IN- or RA-). Because these pairs occur so frequently in Wordle answers, they help explain why some guesses reduce the search space more effectively than others. A guess containing high-frequency bigrams is more likely to match part of the target word, even if the entire guess is incorrect.
-# Summary 
+The table highlights the ten most frequent bigrams, but a broader view helps reveal the full pattern. The following bar chart expands the ranking to the top twenty-five bigrams, making the distribution easier to compare. In this larger set, ER stands out as the most common bigram with 134 occurrences. It is followed by IN, ST, RA, and AR, all of which occur frequently in English and appear naturally throughout the Wordle list. These bigrams often represent common endings, prefixes, or internal transitions, which explains why players frequently encounter them in solutions. Seeing the wider distribution helps illustrate how strongly Wordle leans on familiar English letter sequences.
+
+<br>
+
+```{r}
+# take top 25 bigrams and plot them 
+bigrams %>%  head(25) %>% 
+  ggplot(aes(x = reorder(Bigram, -Counts), y = Counts)) + 
+  geom_col(fill = "forestgreen") +
+  geom_text(aes(label = Counts), nudge_y = 6, size = 4) +
+  labs(
+    title = "Top 25 Most Common Bigrams in Wordle Solutions",
+    x = "Bigram",
+    y = "Count"
+  ) +
+  theme_calc() +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),   # title size
+    axis.title.x = element_text(size = 18),                # X label
+    axis.title.y = element_text(size = 18),                # Y label
+    axis.text.x = element_text(size = 8),                  # axis value labels
+    axis.text.y = element_text(size = 12)
+  )
+```
+
+
+<br> 
+
+
+The bar chart confirms the strong presence of these high-frequency patterns across the full Wordle answer list. Because bigrams like ER, IN, and ST occur so often, guesses containing these sequences tend to be more informative. Even when the entire guess is wrong, matching a common bigram can reveal valuable clues about the structure of the hidden word. This reinforces the idea that Wordle solutions are shaped by familiar English letter patterns rather than random combinations. After understanding which bigrams are most frequent overall, the next step is to see whether their behavior changes depending on where they appear within the word.
+
+
+---
+
+### **Question 4 - How does the bigram frequency change depending on where they appear in the word?**
+
+
+While Question 3 examined bigrams across all positions, this section focuses on where those bigrams appear within Wordle solutions. Each answer contains four bigrams that correspond to the pairs of letters at positions (1,2), (2,3), (3,4), and (4,5). These are labeled B1 through B4. Because English words often follow predictable structures, the frequency of a bigram can change significantly depending on whether it appears at the beginning, middle, or end of a word. By breaking the counts down by position, we can see how Wordle mirrors these natural language patterns.
+
+
+The following are the 4 possible bigram positions in a Wordle solution:
+
+- B1: letters 1–2 (start of word)
+- B2: letters 2–3
+- B3: letters 3–4
+- B4: letters 4–5 (end of word)
+
+Each bigram position carries its own linguistic role. B1 often reflects common word openings. B2 and B3 tend to show transitional patterns that move between consonants and vowels. B4 usually represents endings or suffix-like patterns. The goal of this section is to show how the distribution shifts across these four positions.
+
+
+<br>
+
+```{r fig.width=12, fig.height=14, message=FALSE, warning=FALSE}
+bigrams_by_position <- wordle_data %>% 
+  mutate (B1 = paste0(P1, P2),  # paste0 no separator by default
+          B2 = paste0(P2, P3),
+          B3 = paste0(P3, P4),
+          B4 = paste0(P4, P5)) %>% 
+  select(B1, B2, B3, B4) %>% 
+  pivot_longer(cols = everything(), names_to = "Position", values_to = "Bigram") %>%  
+  group_by(Position, Bigram) %>% 
+  summarise(Counts = n()) %>% 
+  arrange(Position, -Counts)
+ 
+bigrams_by_position %>%
+  group_by(Position) %>% 
+  slice_max(Counts, n = 3) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "50%", height = "400px")
+```
+
+<br>
+
+The table shows the three most frequent bigrams for each of the four positions, and it illustrates how different the distribution becomes once location is taken into account. In Position B1, the most common starting bigram is ST with 52 occurrences, followed by SH with 34 and SP with 33. These results match familiar English patterns where many words begin with strong consonant clusters. This indicates that Wordle solutions frequently start with structures that resemble standard English prefixes.
+
+In Position B2, the most frequent bigrams shift to vowel–consonant or consonant–vowel transitions. RO appears 51 times, RA appears 49 times, and RI appears 43 times. These combinations help form smooth internal transitions within the word. The values show that B2 is less about fixed patterns and more about natural flow inside the word.
+
+Position B3 shows another transition heavy region. AR appears 38 times, IN appears 37 times, and AS and EA follow with 31 occurrences each. This reflects the flexibility of the middle portion of English words. There is no single dominant bigram here. Instead, the data highlights how the middle of a word supports a broader variety of patterns.
+
+Finally, Position B4 reveals the strongest structural pattern. ER appears 95 times, far more than any bigram in the other positions. CH appears 39 times, and SE appears 38 times. These are all common English endings that resemble suffix like behavior. The strength of ER in particular shows that Wordle endings follow predictable language patterns.
+
+Across these results, it becomes clear that bigram frequency is highly dependent on position. Wordle solutions tend to start with consonant clusters, transition through varied internal combinations, and end with well known English endings. Position specific patterns of this type help explain why some guesses immediately eliminate many possibilities when the player knows the exact location of one or more letters.
+
+After identifying the most frequent bigrams in each position through the summary table, the next step is to visualize these differences more clearly. The bar charts below display the top ten bigrams for each position. Plotting them side by side helps reveal how strongly each position leans toward certain structural patterns and makes it easier to compare the behavior of starting, middle, and ending bigrams.
+
+<br>
+
+```{r fig.width=12, fig.height=14}
+top_bigrams_by_pos <- bigrams_by_position %>%
+  group_by(Position) %>%
+  slice_max(Counts, n = 10)
+
+
+# plot for bigram 1 
+B1_plot <- top_bigrams_by_pos %>% 
+  filter(Position == "B1") %>% 
+  ggplot(aes(x = reorder(Bigram, -Counts), y = Counts)) +
+  geom_col(fill = "darkorange") +
+  geom_text(aes(label = Counts), vjust = -1, size = 4) +
+  labs(
+    title = "Most Common Bigrams in Position B1 (Start of Word)",
+    x = "Bigram",
+    y = "Count"
+  ) +
+  theme_calc() +
+  theme(
+    plot.title = element_text(size = 15, face = "bold"),   # title size
+    axis.title.x = element_text(size = 15),                # X label
+    axis.title.y = element_text(size = 15),                # Y label
+    axis.text.x = element_text(size = 10), 
+    axis.text.y = element_text(size = 10)
+    )
+
+
+# plot for bigram 2
+B2_plot <- top_bigrams_by_pos %>% 
+  filter(Position == "B2") %>% 
+  ggplot(aes(x = reorder(Bigram, -Counts), y = Counts)) +
+  geom_col(fill = "darkorange") +
+  geom_text(aes(label = Counts), vjust = -1, size = 4) +
+  labs(
+    title = "Most Common Bigrams in Position B2",
+    x = "Bigram",
+    y = "Count"
+  ) +
+  theme_calc() +
+  theme(
+    plot.title = element_text(size = 15, face = "bold"),   # title size
+    axis.title.x = element_text(size = 15),                # X label
+    axis.title.y = element_text(size = 15),                # Y label
+    axis.text.x = element_text(size = 10), 
+    axis.text.y = element_text(size = 10)
+    )
+
+# plot for bigram 3 
+B3_plot <- top_bigrams_by_pos %>% 
+  filter(Position == "B3") %>% 
+  ggplot(aes(x = reorder(Bigram, -Counts), y = Counts)) +
+  geom_col(fill = "darkorange") +
+  geom_text(aes(label = Counts), vjust = -1, size = 4) +
+  labs(
+    title = "Most Common Bigrams in Position B3",
+    x = "Bigram",
+    y = "Count"
+  ) +
+  theme_calc() +
+  theme(
+    plot.title = element_text(size = 15, face = "bold"),   # title size
+    axis.title.x = element_text(size = 15),                # X label
+    axis.title.y = element_text(size = 15),                # Y label
+    axis.text.x = element_text(size = 10), 
+    axis.text.y = element_text(size = 10)
+    )
+
+# plot for bigram 4 
+B4_plot <- top_bigrams_by_pos %>% 
+  filter(Position == "B4") %>% 
+  ggplot(aes(x = reorder(Bigram, -Counts), y = Counts)) +
+  geom_col(fill = "darkorange") +
+  geom_text(aes(label = Counts), vjust = -1, size = 4) +
+  labs(
+    title = "Most Common Bigrams in Position B4 (End of Word)",
+    x = "Bigram",
+    y = "Count"
+  ) +
+  theme_calc() +
+  theme(
+    plot.title = element_text(size = 15, face = "bold"),   # title size
+    axis.title.x = element_text(size = 15),                # X label
+    axis.title.y = element_text(size = 15),                # Y label
+    axis.text.x = element_text(size = 10), 
+    axis.text.y = element_text(size = 10)
+    )
+
+grid.arrange(
+  B1_plot, B2_plot,
+  B3_plot, B4_plot,
+  ncol = 2
+)
+```
+
+<br>
+
+The plots reinforce the patterns seen in the table but make the contrasts more visually apparent. The B1 chart shows a sharp concentration of starting consonant clusters such as ST, SH, and SP, which appear far more often than other beginnings. In the B2 and B3 charts, the bars are more evenly distributed, reflecting the flexible transitions inside a word. These middle positions contain many vowel–consonant and consonant–vowel pairs, which explains the smoother shape of their plots.
+
+The B4 chart, however, stands out the most. ER dominates the ending position with a count far higher than any other ending bigram. CH and SE follow behind it, both representing common English suffix patterns. The strong skew in the B4 distribution highlights how predictable English endings are compared to the internal structure of the word.
+
+<br>
+
+Overall, breaking down bigrams by position shows that Wordle words follow clear English structural tendencies. Words often begin with recognizable consonant clusters, transition through varied middle combinations, and end with predictable suffix patterns. Understanding these positional differences makes bigrams more useful during gameplay, because certain patterns are far more likely depending on where the letters appear. This helps guide strategic guesses and supports the idea that Wordle’s solution set mirrors natural English word formation.
+
+---
+
+### **So _how_ can we apply this?**
+
+Understanding positional bigram patterns becomes especially useful when solving a partially completed Wordle. Suppose the puzzle reveals the pattern BAK__, with only the last two letters missing. Several completions are possible:
+
+- BAKER
+- BAKED
+- BAKES
+
+Rather than guessing blindly, we can use the positional bigram data to identify which ending is most likely to appear among Wordle solutions. Because the final two letters form the bigram in position B4, we look specifically at how often ER, ED, and ES occur in that final slot.
+
+<br>
+
+```{r}
+# pull end of word bigrams (B4)
+# and display table 
+bigrams_by_position %>% 
+  filter(Position == "B4", Bigram %in% c("ER", "ED", "ES")) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "50%")
+```
+<br> 
+
+
+From the data frequencies in B4 are as follows:
+
+- ER occurs 95 times
+- ED occurs 7 times
+- ES occurs 0 times
+
+
+ER stands out overwhelmingly as the most common ending among all Wordle solutions. This matches known English patterns since -ER is a frequent suffix found in many words. 
+
+Because ER is so dominant in the B4 position, the most probable answer for the pattern **BAK__** is **BAKER**.
+
+This example shows how positional bigram frequency can move us beyond intuition, helping narrow down solutions by grounding each guess in real structural patterns found in the Wordle dataset.
+
+
+---
+
+
+### **FUN FACT AGAIN!**
+
+The positional bigram data also reinforces the earlier observation about how rarely Wordle uses plural forms. In English, the suffix ES is a common way to pluralize words, but in the final bigram position (B4) it appears 0 times across the entire Wordle dataset. This matches the pattern seen in the positional heatmap from before where almost no solutions end with the letter S.
+
+Taken together, the bigram table and the letter positional analysis show that typical plural endings such as ES are almost never selected as Wordle answers. Instead of forming five-letter solutions by attaching an S to a shorter base word, Wordle tends to choose words where every letter is part of the original root. This provides further evidence that plural formations are intentionally avoided in the answer list.
+
+
+---
+
+
+### **Question 5 - Do repeated letter Wordle answers follow seasonal or monthly patterns across different years?**
+
+
+Repeated letters are common in English words, but it is not clear whether Wordle distributes these types of answers in any predictable way. Since the game is published every day, it is reasonable to wonder whether repeated-letter words cluster in certain months, appear more often during particular seasons, or follow some kind of scheduling rule. To investigate this, I examined how many repeated-letter solutions occurred in each month across multiple years.
+
+The first step was to find the total number of repeated-letter answers per month. The table below summarizes these counts for every year in the dataset and gives a numerical overview of how often repeated-letter solutions appear.
+
+
+<br>
+
+```{r fig.width=15, fig.height=8, message=FALSE, warning=FALSE}
+# pulling number of words with repeated letters 
+monthly_repeats <- wordle_data %>%
+group_by(Year, Month) %>%               # we group by month AND year 
+summarise(
+repeats = sum(Has.repeated.letters == 1))
+
+
+monthly_repeats %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "50%", height = "300px")
+```
+
+<br>
+
+The monthly values show a wide range of variation. For example, in 2021 the counts range from 4 in December to 14 in August. In 2022 the highest month is July with 14 repeated-letter answers, while April contains only 5. The variation continues in later years. Some months have noticeably high counts in certain years and noticeably low counts in others. These changes do not follow a consistent pattern.
+
+To visualize the trends more clearly, I created a line plot that displays monthly repeated-letter counts separated by year.
+
+<br>
+
+```{r fig.width=13, fig.height=9, message=FALSE, warning=FALSE}
+# line graph by year
+monthly_repeats %>% 
+  ggplot(aes(x = Month, y = repeats, group = Year, color = factor(Year))) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  facet_wrap(~Year) +
+  labs(
+  title = "Repeated-Letter Wordle Answers by Month and Year",
+  x = "Month",
+  y = "Number of Repeated-Letter Solutions",
+  color = "Year"
+  ) +
+  theme_calc() + 
+  theme(
+    plot.title = element_text(size = 25, face = "bold"),   # title size
+    axis.title.x = element_text(size = 20),                # X label
+    axis.title.y = element_text(size = 20),                # Y label
+    axis.text.x = element_text(angle = 90, vjust = 0.5, size = 15),
+    axis.text.y = element_text(size = 15)
+    )
+
+```
+
+
+The line plots confirm that the number of repeated-letter answers changes from month to month, but not in a consistent or predictable way. Some years show spikes in certain months, while others show dips in those same months. If a seasonal pattern existed, the lines for each year would show similar shapes or similar rises and falls. Instead, each year displays its own unrelated pattern.
+
+To explore the distribution in more detail, I created monthly calendar heatmaps. Each calendar highlights the exact days that contain repeated-letter solutions. The example below shows January across several years. Light blue squares mark days with repeated letters.
+
+
+```{r fig.width=15, fig.height=14}
+# adding a numeric month column so I can match months correctly
+wordle_data <- wordle_data %>%
+  mutate(
+    Month.num = match(Month, month.name)
+  )
+
+# function to create one calendar for a given year and month
+make_calendar <- function(y, m) {
+  
+  # pulls only the exact days in that month that have repeated-letter answers
+  repeated_days <- wordle_data %>%
+    filter(Year == y, Month.num == m, `Has.repeated.letters` == 1) %>%
+    pull(Day)
+    
+  # actual calendar plot 
+  calendR(
+    year = y,
+    month = m,
+    start = "S",        # week start on sunday
+    title = paste(month.name[m], y),
+    special.days = repeated_days,    # indicates days to color (this is why I pulled the days above) 
+    special.col = "lightblue"       # color for the special days ^
+  )
+}
+
+# hardcoding cases :(
+# not all years have the same amount of data 
+# 2021 data started aug 
+# 2025 data is from jan - nov
+year_plots <- function(month, yearStart, yearEnd){
+
+  if (yearStart == 2022 && yearEnd == 2025) {
+
+    y22 <- make_calendar(2022, month)
+    y23 <- make_calendar(2023, month)
+    y24 <- make_calendar(2024, month)
+    y25 <- make_calendar(2025, month)
+
+    grid.arrange(
+      y22, y23,
+      y24, y25,
+      ncol = 2
+    )
+
+  } else if (yearStart == 2021 && yearEnd == 2024) {
+
+    y21 <- make_calendar(2021, month)
+    y22 <- make_calendar(2022, month)
+    y23 <- make_calendar(2023, month)
+    y24 <- make_calendar(2024, month)
+
+    grid.arrange(
+      y21, y22,
+      y23, y24,
+      ncol = 2
+    )
+
+  } else if (yearStart == 2021 && yearEnd == 2025) {
+
+    y21 <- make_calendar(2021, month)
+    y22 <- make_calendar(2022, month)
+    y23 <- make_calendar(2023, month)
+    y24 <- make_calendar(2024, month)
+    y25 <- make_calendar(2025, month)
+
+    grid.arrange(
+      y21, y22,
+      y23, y24,
+      y25,
+      ncol = 2
+    )
+
+  }
+}
+
+# jan plot 
+year_plots(01, 2022, 2025)
+
+# testing other plots here 
+
+#year_plots(02, 2022, 2025)
+#year_plots(03, 2022, 2025)
+#year_plots(04, 2022, 2025)
+#year_plots(05, 2022, 2025)
+#year_plots(06, 2021, 2025)
+#year_plots(07, 2021, 2025)
+#year_plots(08, 2021, 2025)
+#year_plots(09, 2021, 2025)
+#year_plots(10, 2021, 2025)
+#year_plots(11, 2021, 2025)
+#year_plots(12, 2021, 2024)
+
+
+
+```
+<br> 
+
+
+The heatmaps show that the placement of repeated-letter answers shifts around without any stable pattern. Some years have several repeated letters near the beginning of the month, some near the end, and others are evenly scattered. There is no monthly rhythm or seasonal cycle that repeats across years.
+
+Taken together, the table, line plots, and heatmaps all point to the same conclusion. The distribution of repeated-letter Wordle solutions does not follow a consistent pattern across months or seasons. The placement appears random rather than structured. This suggests that the puzzle generator does not intentionally space out or cluster repeated-letter answers, and that these words occur independently of time-based factors.
+
+The analysis of repeated-letter patterns showed that Wordle does not seem to follow any kind of seasonal or monthly structure when selecting solutions. Once that question was resolved, I wanted to shift to a different type of linguistic pattern that is not tied to time at all. Instead of looking at when certain words appear, the next question looks at how words behave in the English language more broadly. Specifically, I wondered whether a word’s frequency in everyday English is related to how valuable that same word would be in Scrabble.
+
+This moves the focus from temporal patterns to linguistic characteristics. While Wordle’s word list is not designed for Scrabble, both games rely on the structure of English vocabulary. It is reasonable to ask whether common words tend to have lower Scrabble point values, or whether rare words tend to score higher because they contain less frequent letters.
+
+This leads to the next question.
+
+<br>
+
+
+### **Question 6 - Is there a relationship between a word’s frequency in English and its Scrabble point value?**
+
+
+Wordle words vary in both their frequency in the English language and their Scrabble score. It seems reasonable to wonder whether these two properties are related. Rare words often contain unusual letters such as X, Z, Q, or J, which carry high Scrabble values, while common words usually rely on frequent letters such as E, A, N, or R, which have low Scrabble scores. If this pattern held strongly in Wordle, then rare words would tend to score high and common words would tend to score low.
+
+To explore this idea, I grouped all Wordle solutions into frequency categories and compared their Scrabble scores. This allows us to see whether certain categories consistently score higher or lower than others.
+
+
+<br>
+
+```{r}
+ggplot(wordle_data, aes(x = Frequency.category, y = Scrabble.score, fill = Frequency.category)) +
+  geom_violin() +
+  geom_jitter(width = 0.1, alpha = 0.3, color = "black", size = 1.5) +
+  labs(
+    title = "Scrabble Score by Word Frequency Category",
+    x = "Word Frequency Category",
+    y = "Scrabble Score"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold"),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12),
+    legend.position = "none"
+  )
+```
+
+<br>
+
+
+The violin plot shows the spread of Scrabble scores across rare, uncommon, and common words. The distributions overlap heavily, and none of the categories displays a clearly higher or lower scoring pattern. This suggests that Wordle does not favor high-value letters in rare words or low-value letters in common words. Instead, the Scrabble scores appear largely independent of how frequent a word is in general English text.
+
+Although Scrabble scores do not show a strong relationship with frequency, the distribution of words across frequency categories reveals a clear pattern. The “Uncommon” category is much denser than both the “Common” and “Rare” categories. The violin plot shows many more Wordle answers falling in the middle frequency range, while very common words and extremely rare words appear far less often. This suggests that Wordle intentionally favors words that are familiar enough to recognize but not used constantly in everyday language. These words provide challenge without feeling unfair or obscure.
+
+
+---
+
+
+### **Fun Data**
+
+The following tables provide a closer look at specific extremes in the dataset. These examples help illustrate how word frequency and Scrabble scores behave independently.
+
+<br>
+
+**Wordle with the lowest corpus frequency**
+```{r}
+wordle_data %>% 
+  filter(Word.Frequency == min(Word.Frequency)) %>%
+  select(Answer, Word.Frequency, Frequency.category) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "50%")
+```
+<br>
+
+**Wordle with the highest corpus frequency**
+```{r}
+wordle_data %>% 
+  filter(Word.Frequency == max(Word.Frequency)) %>%
+  select(Answer, Word.Frequency, Frequency.category) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "60%")
+```
+<br>
+
+**Three lowest Scrabble score Wordles per frequency category**
+```{r}
+wordle_data %>%
+  group_by(Frequency.category) %>%
+  slice_min(Scrabble.score, n = 3, with_ties = FALSE) %>%
+  select(Answer, Scrabble.score, Frequency.category) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "60%", height = "60%")
+```
+<br> 
+
+**Three highest Scrabble score Wordles per frequency category**
+```{r}
+wordle_data %>%
+  group_by(Frequency.category) %>%
+  slice_max(Scrabble.score, n = 3, with_ties = FALSE) %>%
+  select(Answer, Scrabble.score, Frequency.category) %>% 
+  kbl() %>% 
+  kable_styling() %>% 
+  scroll_box(width = "60%", height = "60%")
+```
+
+
+<br>
+
+
+Together, these summaries reinforce the main result. Common words, rare words, and everything in between can all have low or high Scrabble scores. Letters that drive Scrabble value do not map cleanly onto how often a word appears in English. Wordle’s solution list includes a mixture at all levels, with no clear relationship between how frequently a word is used and how valuable it would be in Scrabble.
+
+
+<hr style="border:1px solid gray">
+
+# **Summary**
+
+This analysis of more than 1,600 Wordle solutions reveals both predictable patterns and surprising gaps in the game’s word choices. Many patterns reflect natural properties of English, while others highlight deliberate design decisions within Wordle’s answer list.
+
+<br>
+
+- Letter and positional patterns: 
+  - Words often begin with familiar consonant clusters such as ST, SH, and BR, while the endings frequently include suffix-like patterns such as ER, CH, and GE. Vowels tend to appear near the center of words, which matches typical English spelling structure.
+
+- Bigrams reveal structure: 
+  - Common letter pairs like ER, IN, and ST dominate specific positions in the word. These patterns explain why certain guesses eliminate many possibilities quickly, especially when the correct letter pair sits in a position typical for English words.
+
+- Rare plurals: 
+  - Very few Wordle solutions end in “S”, and the bigram “ES” does not appear in the final position at all. This supports the observation that Wordle avoids simple plural forms created by adding an S to a base word.
+
+- Repeated letters: 
+  - Words containing repeated letters appear in different months and years without any consistent pattern. Calendar visualizations and line plots show that their placement does not follow a seasonal cycle or a predictable monthly trend.
+
+- Scrabble scores vs. frequency: 
+  - Scrabble points are influenced by the presence of rare letters like Q, Z, and X, while common letters tend to keep scores low. However, word frequency does not strongly predict a word’s Scrabble value. 
+  - The most notable trend is that the “Uncommon” frequency category contains far more Wordle answers than the “Common” or “Rare” categories, which suggests that Wordle prefers words that are familiar but not overly common.
+
+<br>
+
+Wordle solutions may feel random, but they follow subtle English patterns. Understanding these tendencies, such as common letter positions, frequent bigrams, the avoidance of plural forms, and the behavior of repeated letters, can give players a more informed strategy. These insights help explain why some guesses are more effective than others and provide a structured approach for tackling future puzzles.
+
+
+<hr style="border:1px solid gray">
+
+
+# **Final Fun Fact**
+
+One Wordle answer that really stuck with me was KEFIR. I remember staring at it thinking, *how* is this even a Wordle word? It stuck with me so much that I ended up naming my Baldur’s Gate character after it. Her name is Kefir, all because of that one puzzle.
+
+To see why KEFIR felt weird, I pulled some info about it:
+
+```{r}
+wordle_data %>%
+  filter(Answer == "KEFIR") %>%
+  select(Answer,Date, Word.Frequency, Frequency.category,Scrabble.score) %>%
+  kbl() %>%
+  kable_styling() %>%
+  scroll_box(width = "100%")
+```
+
+
+<br>
+
+So yeah, KEFIR really is rare. Also when the dataset is sorted from lowest to highest frequency, KEFIR shows up early in the rare list. So my confusion was justified. Wordle basically handed me a niche grocery store item and said “good luck”.
+
+
+<br>
+<br>
+<br>
+
 
 

@@ -1051,8 +1051,17 @@ This analysis of more than 1,600 Wordle solutions reveals both predictable patte
 
 <br>
 
-Wordle solutions may feel random, but they follow subtle English patterns. Understanding these tendencies, such as common letter positions, frequent bigrams, the avoidance of plural forms, and the behavior of repeated letters, can give players a more informed strategy. These insights help explain why some guesses are more effective than others and provide a structured approach for tackling future puzzles.
+Limitations:
 
+One thing to keep in mind is that the word-frequency values in this project come from the wordfreq Python library. It provides reasonable estimates for how often words appear in general English based on its available corpora, but it is still just one model of frequency. After pulling those values, I created my own thresholds to label words as “Common,” “Uncommon,” or “Rare,” which means those categories work well for comparison but shouldn’t be treated as strict linguistic classifications.
+
+There are also some small gaps in the Wordle dataset itself. The 2021 puzzles only start in August, and the 2025 data ends in November, so a few months are missing. This mostly affects the parts of the analysis that look at patterns across months or years.
+
+Even with these limits, the larger trends such as common bigrams, vowel placement, the scarcity of plurals, and the randomness of repeated letters still show up clearly across the full dataset.
+
+<br> 
+
+Overall, Wordle solutions may feel random, but they follow subtle English patterns. Understanding these tendencies, such as common letter positions, frequent bigrams, the avoidance of plural forms, and the behavior of repeated letters, can give players a more informed strategy. These insights help explain why some guesses are more effective than others and provide a structured approach for tackling future puzzles.
 
 <hr style="border:1px solid gray">
 
